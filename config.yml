@@ -1,0 +1,11 @@
+# Amount of money the server account starts with
+server_starting_balance: 25000
+
+# Amount of money the server account generates everyday
+server_daily_inflation: 100
+
+# How often to reward non-afk players (in ticks)
+handout_timer: 72000
+
+# How much to give non-afk players when rewarded
+handout_amount: 1.0
