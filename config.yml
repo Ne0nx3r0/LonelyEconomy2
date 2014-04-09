@@ -9,3 +9,11 @@ handout_timer: 72000
 
 # How much to give non-afk players when rewarded
 handout_amount: 1.0
+
+database: 
+    prefix: le2_
+    hostname: localhost
+    port: 3306
+    database: lonelyeconomy
+    username: lonelyeconomy
+    password: lonelyeconomy
