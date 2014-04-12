@@ -2,6 +2,11 @@ package com.ne0nx3r0.lonelyeconomy;
 
 import com.ne0nx3r0.lonelyeconomy.commands.LonelyCommandExecutor;
 import com.ne0nx3r0.lonelyeconomy.economy.LonelyEconomy;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -11,6 +16,22 @@ public class LonelyEconomyPlugin extends JavaPlugin {
     
     @Override
     public void onEnable() {
+        try {
+            getDataFolder().mkdirs();
+
+            File configFile = new File(getDataFolder(),"config.yml");
+
+            if(!configFile.exists())
+            {
+                copy(getResource("config.yml"), configFile);
+            }
+        } 
+        catch (IOException ex) {
+            this.getLogger().log(Level.INFO, "Unable to load config!");
+            
+            return;
+        }
+        
         try {
             this.economy = new LonelyEconomy(this);
         } 
@@ -36,5 +57,18 @@ public class LonelyEconomyPlugin extends JavaPlugin {
     
     public LonelyEconomy getEconomy() {
         return this.economy;
+    }
+
+    public void copy(InputStream in, File file) throws IOException
+    {
+        OutputStream out = new FileOutputStream(file);
+        byte[] buf = new byte[1024];
+        int len;
+        while((len=in.read(buf))>0)
+        {
+            out.write(buf,0,len);
+        }
+        out.close();
+        in.close();
     }
 }
