@@ -247,7 +247,7 @@ public class LonelyEconomy {
         // values were equal = 0
         // first value was greater = 1
         // second value was greater = -1
-        if(serverBalance.compareTo(amountToGivePlayer) == -1){
+        if(amountToGivePlayer.compareTo(serverBalance) == 1){
             return new LonelyEconomyResponse(LonelyEconomyResponseType.FAILURE_INSUFFICIENT_FUNDS,"The server does not have "+amountToGivePlayer+" to spend!");
         }
         
@@ -263,7 +263,7 @@ public class LonelyEconomy {
             takeMoneyFromServer.setBigDecimal(1, amountToGivePlayer);
             
             int takeResult = takeMoneyFromServer.executeUpdate();
-            if(takeResult == 0){
+            if(takeResult > 0){
                 PlayerAccount account = playerAccountResponse.getAccount();
                 
                 try(PreparedStatement giveMoneyToPlayer = this.con.prepareStatement("UPDATE "+this.TBL_ACCOUNTS+" SET balance = balance + ? WHERE uuid = ? LIMIT 1;")){
@@ -277,7 +277,7 @@ public class LonelyEconomy {
                     return new LonelyEconomyResponse(LonelyEconomyResponseType.SUCCESS,account);
                 }
             }
-            else {
+            else{
                 return new LonelyEconomyResponse(LonelyEconomyResponseType.FAILURE,"Unable to retrieve funds from the server!");
             }
         } 
@@ -288,8 +288,47 @@ public class LonelyEconomy {
         }
     }
 
-    public LonelyEconomyResponse takeMoneyFromPlayer(String payFromPlayerName, BigDecimal amount) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public LonelyEconomyResponse takeMoneyFromPlayer(String takeFromPlayerName, BigDecimal amountToTakeFromPlayer) {
+        LonelyEconomyResponse takeFromResponse = this.getPlayerAccount(takeFromPlayerName, false);
+        
+        if(!takeFromResponse.wasSuccessful()) {
+            return takeFromResponse;
+        }
+        
+        PlayerAccount playerAccount = takeFromResponse.getAccount();
+        
+        // values were equal = 0
+        // first value was greater = 1
+        // second value was greater = -1
+        if(playerAccount.getBalance().compareTo(amountToTakeFromPlayer) == -1){
+            return new LonelyEconomyResponse(LonelyEconomyResponseType.FAILURE_INSUFFICIENT_FUNDS,playerAccount.getUsername()+" does not have "+amountToTakeFromPlayer+"!");
+        }
+
+        try(PreparedStatement takeMoneyFromPlayer = this.con.prepareStatement("UPDATE "+this.TBL_ACCOUNTS+" SET balance = balance - ? WHERE uuid = ? LIMIT 1;")){
+            takeMoneyFromPlayer.setBigDecimal(1, amountToTakeFromPlayer);
+            
+            int takeResult = takeMoneyFromPlayer.executeUpdate();
+            if(takeResult > 0){                
+                try(PreparedStatement giveMoneyToPlayer = this.con.prepareStatement("UPDATE "+this.TBL_SERVER_BALANCE+" SET balance = balance + ?")){
+                    giveMoneyToPlayer.setBigDecimal(1, amountToTakeFromPlayer);
+                    giveMoneyToPlayer.setString(2, playerAccount.getUUID().toString());
+
+                    giveMoneyToPlayer.executeUpdate();
+                    
+                    playerAccount.setBalance(playerAccount.getBalance().subtract(amountToTakeFromPlayer));
+                    
+                    return new LonelyEconomyResponse(LonelyEconomyResponseType.SUCCESS,playerAccount);
+                }
+            }
+            else{
+                return new LonelyEconomyResponse(LonelyEconomyResponseType.FAILURE,"Unable to retrieve funds from the server!");
+            }
+        } 
+        catch (SQLException ex) {
+            Logger.getLogger(LonelyEconomy.class.getName()).log(Level.SEVERE, null, ex);
+        
+            return new LonelyEconomyResponse(LonelyEconomyResponseType.FAILURE_DATABASE,"A database error occurred!");
+        }
     }
     
     public LonelyEconomyResponse payPlayer(String payFromPlayerName, String payToPlayerName, BigDecimal amount) {
