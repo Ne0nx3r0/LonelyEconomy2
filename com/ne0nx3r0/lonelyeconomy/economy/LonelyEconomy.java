@@ -241,9 +241,51 @@ public class LonelyEconomy {
         return this.getBigDecimal(0);
     }
     
-    public LonelyEconomyResponse giveMoneyToPlayer(String giveToPlayerName, BigDecimal amount) {
-        batch prepared statement that takes money from the server then gives it to the player
-        but rolls back if either query errors and commits afterwards
+    public LonelyEconomyResponse giveMoneyToPlayer(String giveToPlayerName, BigDecimal amountToGivePlayer) {
+        BigDecimal serverBalance = this.getServerBalance();
+        
+        // values were equal = 0
+        // first value was greater = 1
+        // second value was greater = -1
+        if(serverBalance.compareTo(amountToGivePlayer) == -1){
+            return new LonelyEconomyResponse(LonelyEconomyResponseType.FAILURE_INSUFFICIENT_FUNDS,"The server does not have "+amountToGivePlayer+" to spend!");
+        }
+        
+        LonelyEconomyResponse playerAccountResponse = this.getPlayerAccount(giveToPlayerName, true);
+        
+        // verifies the player has a valid account to give the money to
+        // before taking it from the server
+        if(!playerAccountResponse.wasSuccessful()){
+            return playerAccountResponse;
+        }
+        
+        try(PreparedStatement takeMoneyFromServer = this.con.prepareStatement("UPDATE "+this.TBL_SERVER_BALANCE+" SET balance = balance - ?")){
+            takeMoneyFromServer.setBigDecimal(1, amountToGivePlayer);
+            
+            int takeResult = takeMoneyFromServer.executeUpdate();
+            if(takeResult == 0){
+                PlayerAccount account = playerAccountResponse.getAccount();
+                
+                try(PreparedStatement giveMoneyToPlayer = this.con.prepareStatement("UPDATE "+this.TBL_ACCOUNTS+" SET balance = balance + ? WHERE uuid = ? LIMIT 1;")){
+                    giveMoneyToPlayer.setBigDecimal(1, amountToGivePlayer);
+                    giveMoneyToPlayer.setString(2, account.getUUID().toString());
+
+                    giveMoneyToPlayer.executeUpdate();
+                    
+                    account.setBalance(account.getBalance().add(amountToGivePlayer));
+                    
+                    return new LonelyEconomyResponse(LonelyEconomyResponseType.SUCCESS,account);
+                }
+            }
+            else {
+                return new LonelyEconomyResponse(LonelyEconomyResponseType.FAILURE,"Unable to retrieve funds from the server!");
+            }
+        } 
+        catch (SQLException ex) {
+            Logger.getLogger(LonelyEconomy.class.getName()).log(Level.SEVERE, null, ex);
+        
+            return new LonelyEconomyResponse(LonelyEconomyResponseType.FAILURE_DATABASE,"A database error occurred!");
+        }
     }
 
     public LonelyEconomyResponse takeMoneyFromPlayer(String payFromPlayerName, BigDecimal amount) {
