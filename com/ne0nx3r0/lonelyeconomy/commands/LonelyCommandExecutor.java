@@ -2,12 +2,14 @@ package com.ne0nx3r0.lonelyeconomy.commands;
 
 import com.ne0nx3r0.lonelyeconomy.LonelyEconomyPlugin;
 import com.ne0nx3r0.lonelyeconomy.economy.LonelyEconomy;
+import com.ne0nx3r0.lonelyeconomy.economy.LonelyEconomyResponse;
 import java.util.HashMap;
 import java.util.Map;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 
 public class LonelyCommandExecutor implements CommandExecutor {
     private final Map<String,LonelyCommand> subCommands;
@@ -62,8 +64,18 @@ public class LonelyCommandExecutor implements CommandExecutor {
         
         cs.sendMessage("Server reserve is "+economy.format(economy.getServerBalance()));
         
-        
-        cs.sendMessage("You have "+economy.format(economy.getBalance(cs.getName())));
+        if(cs instanceof Player){
+            Player player = (Player) cs;
+            
+            LonelyEconomyResponse response = this.economy.getPlayerAccount(player.getUniqueId(), false);
+
+            if(response.wasSuccessful()){
+                cs.sendMessage("You have "+economy.format(response.getAccount().getBalance()));
+            }
+            else {
+                cs.sendMessage("You have "+economy.format(this.economy.getBigDecimal(0)));
+            }
+        }
     }
     
     public final void registerSubcommand(LonelyCommand lc) {

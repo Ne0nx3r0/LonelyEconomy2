@@ -6,11 +6,20 @@ import java.util.UUID;
 public class PlayerAccount {
     private final String username;
     private final UUID uuid;
+    private final int dbId;
     private BigDecimal balance;
     
-    public PlayerAccount(String username, UUID uuid) {
+    public PlayerAccount(int id,String username, UUID uuid) {
+        this.dbId = id;
         this.username = username;
         this.uuid = uuid;
+    }
+    
+    public PlayerAccount(int dbId, String username, UUID uuid, BigDecimal balance) {
+        this.dbId = dbId;
+        this.username = username;
+        this.uuid = uuid;
+        this.balance = balance;
     }
     
     public String getUsername() {
@@ -27,5 +36,9 @@ public class PlayerAccount {
     
     public BigDecimal getBalance() {
         return this.balance;
+    }
+    
+    public int getDatabaseId() {
+        return this.dbId;
     }
 }

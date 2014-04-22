@@ -3,16 +3,19 @@ package com.ne0nx3r0.lonelyeconomy.economy;
 import java.sql.Connection;
 import com.ne0nx3r0.lonelyeconomy.LonelyEconomyPlugin;
 import java.math.BigDecimal;
-import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.LinkedHashMap;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.Player;
 
 public class LonelyEconomy {
     private Connection con;
@@ -50,7 +53,7 @@ public class LonelyEconomy {
 	}
         
 	try {
-		this.con = DriverManager.getConnection("jdbc:mysql://"+hostname+":"+port+"/"+database,username,password);
+            this.con = DriverManager.getConnection("jdbc:mysql://"+hostname+":"+port+"/"+database,username,password);
 	} 
         catch (SQLException ex) {
             this.logger.log(Level.SEVERE, null, ex);
@@ -69,13 +72,15 @@ public class LonelyEconomy {
         ResultSet tableExistsResultSet = this.con.getMetaData().getTables(null, null, this.TBL_SERVER_BALANCE, null);
         
         if(!tableExistsResultSet.next()) {
+            int serverStartingBalance = plugin.getConfig().getInt("server_starting_balance",0);
+            
             this.con.setAutoCommit(false);
             
-            PreparedStatement createAccountsTable = this.con.prepareStatement("CREATE TABLE IF NOT EXISTS `"+this.TBL_ACCOUNTS+"` (  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,  `username` VARCHAR(45) NOT NULL,  `uuid` VARCHAR(36) NOT NULL,  `balance` DECIMAL(13,2) UNSIGNED NOT NULL,  `last_seen` DATETIME NOT NULL,  PRIMARY KEY (`id`),  UNIQUE INDEX `username_UNIQUE` (`username` ASC),  UNIQUE INDEX `uuid_UNIQUE` (`uuid` ASC))ENGINE = InnoDB;");
+            PreparedStatement createAccountsTable = this.con.prepareStatement("CREATE TABLE IF NOT EXISTS `"+this.TBL_ACCOUNTS+"` (  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,  `username` VARCHAR(45) NOT NULL,  `uuid` VARCHAR(36) NOT NULL,  `balance` DECIMAL(13,2) UNSIGNED NOT NULL,  `last_seen` DATETIME NOT NULL,  PRIMARY KEY (`id`),  UNIQUE INDEX `uuid_UNIQUE` (`uuid` ASC))ENGINE = InnoDB;");
             PreparedStatement createTransactionsTable = this.con.prepareStatement("CREATE TABLE IF NOT EXISTS `"+this.TBL_TRANSACTIONS+"` (  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,  `account_id` INT UNSIGNED NOT NULL,  `amount` DECIMAL(13,2) NOT NULL,  `timestamp` TIMESTAMP NOT NULL,  PRIMARY KEY (`id`),  INDEX `id_idx` (`account_id` ASC),  CONSTRAINT `account_id`    FOREIGN KEY (`account_id`)    REFERENCES "+this.TBL_ACCOUNTS+" (`id`)    ON DELETE NO ACTION    ON UPDATE NO ACTION)ENGINE = InnoDB;");
             PreparedStatement createServerBalanceTable = this.con.prepareStatement("CREATE TABLE IF NOT EXISTS `"+this.TBL_SERVER_BALANCE+"` (  `balance` DECIMAL(13,2) NOT NULL,  PRIMARY KEY (`balance`))ENGINE = InnoDB;");
             PreparedStatement insertServerBalance = this.con.prepareStatement("INSERT INTO "+this.TBL_SERVER_BALANCE+"(balance) VALUES(?);");
-            insertServerBalance.setInt(1,plugin.getConfig().getInt("server_starting_balance",0));
+            insertServerBalance.setInt(1,serverStartingBalance);
             
             try {
                 createAccountsTable.execute();
@@ -94,29 +99,156 @@ public class LonelyEconomy {
 
                 return;
             }
+            
+            //this.SERVER_BALANCE = this.getBigDecimal(serverStartingBalance);
+        }
+        else {
+            //this.SERVER_BALANCE = this.getServerBalance();
         }
     }
     
-    public boolean hasAccount(String playerName) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public LonelyEconomyResponse getPlayerAccount(String playerName,boolean createIfNotExists) {
+        playerName = playerName.toLowerCase();
+        
+        try {
+            PreparedStatement getPlayerAccount = this.con.prepareStatement("SELECT id,username,uuid,balance,last_seen FROM "+this.TBL_ACCOUNTS+" WHERE username=?");
+            
+            getPlayerAccount.setString(1, playerName);
+            
+            ResultSet result = getPlayerAccount.executeQuery();
+            
+            if(result.next()) {
+                return new LonelyEconomyResponse(
+                    LonelyEconomyResponseType.SUCCESS,
+                    new PlayerAccount(
+                        result.getInt("id"),
+                        result.getString("username"),
+                        UUID.fromString(result.getString("uuid")),
+                        result.getBigDecimal("balance")
+                    )
+                );
+            }
+            else if(createIfNotExists){
+                // if the player is online create an account for them
+                Player player = Bukkit.getPlayer(playerName);
+                
+                if(player != null){
+                    return this.createPlayerAccount(player.getUniqueId(),player.getName().toLowerCase());
+                }
+            }
+        } 
+        catch (SQLException ex) {
+            Logger.getLogger(LonelyEconomy.class.getName()).log(Level.SEVERE, null, ex);
+            
+            return new LonelyEconomyResponse(LonelyEconomyResponseType.FAILURE,"A database error occured while finding an account for "+playerName);
+        }    
+            
+        return new LonelyEconomyResponse(LonelyEconomyResponseType.FAILURE,"No account exists for "+playerName);
     }
+    
+    public LonelyEconomyResponse getPlayerAccount(UUID playerUUID,boolean createIfNotExists) {
+        try {
+            PreparedStatement getPlayerAccount = this.con.prepareStatement("SELECT id,username,uuid,balance,last_seen FROM "+this.TBL_ACCOUNTS+" WHERE uuid=?");
+            
+            getPlayerAccount.setString(1, playerUUID.toString());
+            
+            ResultSet result = getPlayerAccount.executeQuery();
+            
+            if(result.next()) {
+                return new LonelyEconomyResponse(
+                    LonelyEconomyResponseType.SUCCESS,
+                    new PlayerAccount(
+                        result.getInt("id"),
+                        result.getString("username"),
+                        UUID.fromString(result.getString("uuid")),
+                        result.getBigDecimal("balance")
+                    )
+                );
+            }
+            else if(createIfNotExists){
+                // if the player is online create an account for them
+                Player player = Bukkit.getPlayer(playerUUID);
+                
+                if(player != null){
+                    return this.createPlayerAccount(player.getUniqueId(),player.getName().toLowerCase());
+                }
+            }
+        } 
+        catch (SQLException ex) {
+            Logger.getLogger(LonelyEconomy.class.getName()).log(Level.SEVERE, null, ex);
+            
+            return new LonelyEconomyResponse(LonelyEconomyResponseType.FAILURE,"A database error occured while finding an account for "+playerUUID);
+        }    
+                 
+        return new LonelyEconomyResponse(LonelyEconomyResponseType.FAILURE,"No account exists for "+playerUUID);
+    }
+    
+    public LonelyEconomyResponse createPlayerAccount(UUID playerUUID, String playerName) {
+        try {
+            PreparedStatement createPlayerAccount = this.con.prepareStatement("INSERT INTO "+this.TBL_ACCOUNTS+"(username,uuid,balance,last_seen) VALUES(?,?,?,?);",
+                    Statement.RETURN_GENERATED_KEYS);
+            
+            createPlayerAccount.setString(1, playerName);
+            createPlayerAccount.setString(2, playerUUID.toString());
+            createPlayerAccount.setInt(3, 0);
+            createPlayerAccount.setTimestamp(4, getCurrentTimeStamp());
 
-    public BigDecimal getBalance(String playerName) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            createPlayerAccount.executeUpdate();
+
+            int affectedRows = createPlayerAccount.executeUpdate();
+            if (affectedRows == 0) {
+                 return new LonelyEconomyResponse(LonelyEconomyResponseType.FAILURE_DATABASE,"A database error occured while creating an account for "+playerName+"("+playerUUID+")");
+            }
+            
+            ResultSet keys = createPlayerAccount.getGeneratedKeys();
+            
+            if (keys.next()) {
+                 return new LonelyEconomyResponse(
+                    LonelyEconomyResponseType.SUCCESS,
+                    new PlayerAccount(
+                        keys.getInt(1),
+                        playerName,
+                        playerUUID,
+                        this.getBigDecimal(0)
+                    )
+                 );
+            }
+        } 
+        catch (SQLException ex) {
+            Logger.getLogger(LonelyEconomy.class.getName()).log(Level.SEVERE, null, ex);
+            
+            return new LonelyEconomyResponse(LonelyEconomyResponseType.FAILURE_DATABASE,"A database error occurred!");
+        }      
+        
+        return new LonelyEconomyResponse(LonelyEconomyResponseType.FAILURE,"Unable to create an account for "+playerName+"("+playerUUID+")");
     }
 
     public BigDecimal getServerBalance() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        try {
+            PreparedStatement getPlayerData = this.con.prepareStatement("SELECT balance FROM "+this.TBL_SERVER_BALANCE+";");
+            
+            ResultSet result = getPlayerData.executeQuery();
+            
+            if(result.next()) {
+                return this.getBigDecimal(result.getString("balance"));
+            }
+        } 
+        catch (SQLException ex) {
+            Logger.getLogger(LonelyEconomy.class.getName()).log(Level.SEVERE, null, ex);
+        }   
+        
+        return this.getBigDecimal(0);
     }
     
     public LonelyEconomyResponse giveMoneyToPlayer(String giveToPlayerName, BigDecimal amount) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        batch prepared statement that takes money from the server then gives it to the player
+                but rolls back if either query errors and commits afterwards
     }
 
     public LonelyEconomyResponse takeMoneyFromPlayer(String payFromPlayerName, BigDecimal amount) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-
+    
     public LonelyEconomyResponse payPlayer(String payFromPlayerName, String payToPlayerName, BigDecimal amount) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
@@ -125,7 +257,7 @@ public class LonelyEconomy {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-    public String getRank(String playerName) {
+    public int getRank(String playerName) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
@@ -153,5 +285,10 @@ public class LonelyEconomy {
     
     public String format(BigDecimal amount) {
         return ChatColor.WHITE+amount.toPlainString()+ChatColor.GOLD+this.getCurrencyName(true)+ChatColor.RESET;
+    }
+    
+    private static java.sql.Timestamp getCurrentTimeStamp() {
+        java.util.Date today = new java.util.Date();
+        return new java.sql.Timestamp(today.getTime());
     }
 }

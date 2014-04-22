@@ -1,22 +1,28 @@
 package com.ne0nx3r0.lonelyeconomy.economy;
 
-import java.math.BigDecimal;
-
-
-//Lonely Economy Response
 public class LonelyEconomyResponse {
     private final LonelyEconomyResponseType response;
     private String message;
-    private BigDecimal balance;
+    private PlayerAccount account;
     
     public LonelyEconomyResponse(LonelyEconomyResponseType response) {
         this.response = response;
     }
     
-    public LonelyEconomyResponse setMessage(String message) {
-        this.message = message;
-        
-        return this;
+    public LonelyEconomyResponse(LonelyEconomyResponseType response,String errorMessage) {
+        this.response = response;
+        this.message = errorMessage;
+    }
+    
+    public LonelyEconomyResponse(LonelyEconomyResponseType response,PlayerAccount account) {
+        this.response = response;
+        this.account = account;
+    }
+    
+    public LonelyEconomyResponse(LonelyEconomyResponseType response,PlayerAccount account, String errorMessage) {
+        this.response = response;
+        this.account = account;
+        this.message = errorMessage;
     }
     
     public String getMessage() {
@@ -31,13 +37,7 @@ public class LonelyEconomyResponse {
         return this.response == LonelyEconomyResponseType.SUCCESS;
     }
 
-    public LonelyEconomyResponse setBalance(BigDecimal amount) {
-        this.balance = amount;
-        
-        return this;
-    }
-    
-    public BigDecimal getBalance() {
-        return this.balance;
+    public PlayerAccount getAccount() {
+        return this.account;
     }
 }

@@ -2,6 +2,8 @@ package com.ne0nx3r0.lonelyeconomy.commands;
 
 import com.ne0nx3r0.lonelyeconomy.LonelyEconomyPlugin;
 import com.ne0nx3r0.lonelyeconomy.economy.LonelyEconomy;
+import com.ne0nx3r0.lonelyeconomy.economy.LonelyEconomyResponse;
+import com.ne0nx3r0.lonelyeconomy.economy.PlayerAccount;
 import java.math.BigDecimal;
 import org.bukkit.command.CommandSender;
 
@@ -29,15 +31,18 @@ public class CommandBalance extends LonelyCommand {
         }
         
         String playerName = args[1];
+
+        LonelyEconomyResponse response = this.economy.getPlayerAccount(playerName,false);
         
-        if(this.economy.hasAccount(playerName)) {
-            BigDecimal playerBalance = this.economy.getBalance(playerName);
+        if(!response.wasSuccessful()) {
+            this.send(cs,response.getMessage());
             
-            this.send(cs,playerName+" has "+this.economy.format(playerBalance));
+            return true;
         }
-        else {
-            this.sendError(cs,playerName+" does not have an account!");
-        }
+        
+        PlayerAccount account = response.getAccount();
+
+        this.send(cs,account.getUsername()+" has "+this.economy.format(account.getBalance()));
         
         return true;
     }
