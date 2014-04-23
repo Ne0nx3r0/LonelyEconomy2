@@ -58,7 +58,7 @@ public class CommandTake extends LonelyCommand {
         Player pReceiver = Bukkit.getServer().getPlayer(pTakeFrom);
         
         if(pReceiver != null) {
-            pReceiver.sendMessage("Y had "+this.economy.format(amount)+" taken away.");
+            pReceiver.sendMessage("You had "+this.economy.format(amount)+" deducted.");
         }
         
         return true;

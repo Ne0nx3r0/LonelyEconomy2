@@ -58,7 +58,7 @@ public class CommandGive extends LonelyCommand {
         Player pReceiver = Bukkit.getServer().getPlayer(receiverName);
         
         if(pReceiver != null) {
-            pReceiver.sendMessage("You were paid "+this.economy.format(amount)+" from the server.");
+            pReceiver.sendMessage("You had "+this.economy.format(amount)+" deposited.");
         }
         
         return true;
