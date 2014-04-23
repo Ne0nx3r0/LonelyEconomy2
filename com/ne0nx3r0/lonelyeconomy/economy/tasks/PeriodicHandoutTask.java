@@ -11,7 +11,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
-class PeriodicHandoutTask implements Runnable {
+public class PeriodicHandoutTask implements Runnable {
     private final LonelyEconomy economy;
     private final BigDecimal amount;
 
@@ -24,12 +24,12 @@ class PeriodicHandoutTask implements Runnable {
     public void run() {
         Essentials essentials = (Essentials) Bukkit.getServer().getPluginManager().getPlugin("Essentials");
 
-        Bukkit.getServer().broadcastMessage(ChatColor.GOLD+"[LonelyEconomy] "+ChatColor.WHITE+"Paying player wages...");
-
         List<UUID> playersToPay = new ArrayList<>();
         
+        Bukkit.getServer().broadcastMessage(ChatColor.GOLD+"[LonelyEconomy] "+ChatColor.WHITE+"Paying player wages");
+            
         for(Player player : Bukkit.getServer().getOnlinePlayers()) {
-            if( player.hasPermission("lonelyeconomy.wages")) {
+            if(player.hasPermission("lonelyeconomy.wages")) {
 
                 if(essentials != null){
                     User user = essentials.getUser(player);
@@ -38,13 +38,16 @@ class PeriodicHandoutTask implements Runnable {
                         continue;
                     }
                 }
+                
                 playersToPay.add(player.getUniqueId());
 
                 player.sendMessage("You earned "+economy.format(amount)+" in hourly wages!");
             }
         }
         
-        this.economy.giveMoneyToPlayers(playersToPay, amount);
+        if(playersToPay.size() > 0){          
+            this.economy.giveMoneyToPlayers(playersToPay, amount);
+        }
     }
     
 }

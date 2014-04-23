@@ -115,7 +115,7 @@ public class Migrator {
     public Map<String,BigDecimal> getAllUserBalances(){
         Map<String,BigDecimal> userBalances = new HashMap<>();
 
-        try (PreparedStatement statement = sqlite.prepare("SELECT username,balance FROM accounts WHERE balance > 0 LIMIT 10000;")){
+        try (PreparedStatement statement = sqlite.prepare("SELECT username,balance FROM accounts WHERE sorting_balance > 0 LIMIT 100000;")){
             try(ResultSet result = statement.executeQuery()){
                 while(result.next())
                 {

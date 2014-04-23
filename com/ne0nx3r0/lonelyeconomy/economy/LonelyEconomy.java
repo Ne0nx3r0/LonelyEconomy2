@@ -2,6 +2,7 @@ package com.ne0nx3r0.lonelyeconomy.economy;
 
 import java.sql.Connection;
 import com.ne0nx3r0.lonelyeconomy.LonelyEconomyPlugin;
+import com.ne0nx3r0.lonelyeconomy.economy.tasks.PeriodicHandoutTask;
 import java.math.BigDecimal;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -18,6 +19,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitTask;
 
 public class LonelyEconomy {
     private Connection con;
@@ -27,6 +29,7 @@ public class LonelyEconomy {
     private final String TBL_TRANSACTIONS;
     private final String TBL_SERVER_BALANCE;
     private boolean enabled = false;
+    private BukkitTask runTaskTimer;
 
     public LonelyEconomy(LonelyEconomyPlugin plugin) throws SQLException {  
         this.logger = plugin.getLogger();
@@ -124,6 +127,8 @@ public class LonelyEconomy {
             }
 
         }
+        
+        this.resetTask(plugin);
         
         this.enabled = true;
     }
@@ -550,21 +555,33 @@ public class LonelyEconomy {
 
     // primarily used for hourly wages
     public void giveMoneyToPlayers(List<UUID> playersToPay, BigDecimal amount) {
-        String playersToPayCSV = "";
+        String playersWhere = "";
         
         for(UUID playerUUID : playersToPay){
-            playersToPayCSV += ","+playerUUID.toString();
+            playersWhere += "OR uuid = '"+playerUUID.toString()+"'";
         }
         
-        playersToPayCSV = playersToPayCSV.substring(1);
+        playersWhere = playersWhere.substring(3);
         
-        try(PreparedStatement giveMoneyToPlayers = this.con.prepareStatement("UPDATE "+this.TBL_ACCOUNTS+" SET balance = balance + ? WHERE uuid IN (?) LIMIT ?")){
+        try(PreparedStatement giveMoneyToPlayers = this.con.prepareStatement("UPDATE "+this.TBL_ACCOUNTS+" SET balance = balance + ? WHERE "+playersWhere+" LIMIT ?")){
             giveMoneyToPlayers.setBigDecimal(1, amount);
-            giveMoneyToPlayers.setString(2, playersToPayCSV);
-            giveMoneyToPlayers.setInt(3, playersToPay.size());
+            giveMoneyToPlayers.setInt(2, playersToPay.size());
+            
+            giveMoneyToPlayers.executeUpdate();
         } 
         catch (SQLException ex) {
             Logger.getLogger(LonelyEconomy.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+
+    public void resetTask(LonelyEconomyPlugin plugin) {
+        if(this.runTaskTimer != null) {
+            this.runTaskTimer.cancel();
+        }
+        
+        long handoutTicks = plugin.getConfig().getLong("handout_timer",20*60*60);// once/hour
+        BigDecimal amount = new BigDecimal(plugin.getConfig().getString("handout_amount","0"));
+        
+        this.runTaskTimer = plugin.getServer().getScheduler().runTaskTimer(plugin, new PeriodicHandoutTask(this,amount), handoutTicks, handoutTicks);
     }
 }

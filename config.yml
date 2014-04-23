@@ -19,4 +19,4 @@ database:
     password: lonelyeconomy
     
 # Attempt to transfer balances from a v1 database (dropped in the plugin folder already)
-transfer_balances: true
+transfer_balances: false
