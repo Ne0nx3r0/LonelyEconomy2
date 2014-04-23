@@ -436,7 +436,27 @@ public class LonelyEconomy {
     }
 
     public LinkedHashMap<String, BigDecimal> getTopPlayers(int iTopAmount) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        try(PreparedStatement statement = this.con.prepareStatement("SELECT username,balance FROM "+this.TBL_ACCOUNTS+" ORDER BY sorting_balance DESC,username ASC LIMIT ?"))
+        {
+            statement.setInt(1, iTopAmount);
+            
+            try(ResultSet result = statement.executeQuery()){
+                LinkedHashMap <String,BigDecimal> topPlayers = new LinkedHashMap <>();
+
+                while(result.next())
+                {
+                    topPlayers.put(result.getString("username"),result.getBigDecimal("balance"));
+                }
+
+                return topPlayers;
+            }
+        }
+        catch (Exception ex)
+        {
+            this.logger.log(Level.SEVERE, null, ex);
+        }
+        
+        return null;
     }
 
     // returns the player's rank or -1 for no account or error
