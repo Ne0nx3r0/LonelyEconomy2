@@ -326,9 +326,9 @@ public class LonelyEconomy {
             if(takeResult > 0){
                 PlayerAccount account = playerAccountResponse.getAccount();
                 
-                try(PreparedStatement giveMoneyToPlayer = this.con.prepareStatement("UPDATE "+this.TBL_ACCOUNTS+" SET balance = balance + ? WHERE uuid = ? LIMIT 1")){
+                try(PreparedStatement giveMoneyToPlayer = this.con.prepareStatement("UPDATE "+this.TBL_ACCOUNTS+" SET balance = balance + ? WHERE id = ? LIMIT 1")){
                     giveMoneyToPlayer.setBigDecimal(1, amountToGivePlayer);
-                    giveMoneyToPlayer.setString(2, account.getUUID().toString());
+                    giveMoneyToPlayer.setInt(2, account.getDatabaseId());
 
                     int giveMoneyRows = giveMoneyToPlayer.executeUpdate();
                     
@@ -368,9 +368,9 @@ public class LonelyEconomy {
             return new LonelyEconomyResponse(LonelyEconomyResponseType.FAILURE_INSUFFICIENT_FUNDS,playerAccount.getUsername()+" does not have "+amountToTakeFromPlayer+"!");
         }
 
-        try(PreparedStatement takeMoneyFromPlayer = this.con.prepareStatement("UPDATE "+this.TBL_ACCOUNTS+" SET balance = balance - ? WHERE uuid = ? LIMIT 1")){
+        try(PreparedStatement takeMoneyFromPlayer = this.con.prepareStatement("UPDATE "+this.TBL_ACCOUNTS+" SET balance = balance - ? WHERE id = ? LIMIT 1")){
             takeMoneyFromPlayer.setBigDecimal(1, amountToTakeFromPlayer);
-            takeMoneyFromPlayer.setString(2, playerAccount.getUUID().toString());
+            takeMoneyFromPlayer.setInt(2, playerAccount.getDatabaseId());
             
             int takeResult = takeMoneyFromPlayer.executeUpdate();
             if(takeResult > 0){                
@@ -419,16 +419,16 @@ public class LonelyEconomy {
         
         PlayerAccount payTo = payToResponse.getAccount();
         
-        try(PreparedStatement takeMoneyFrom = this.con.prepareStatement("UPDATE "+this.TBL_ACCOUNTS+" SET balance = balance - ? WHERE uuid = ? LIMIT 1")){
+        try(PreparedStatement takeMoneyFrom = this.con.prepareStatement("UPDATE "+this.TBL_ACCOUNTS+" SET balance = balance - ? WHERE id = ? LIMIT 1")){
             takeMoneyFrom.setBigDecimal(1, amountToPay);
-            takeMoneyFrom.setString(2, payFrom.getUUID().toString());
+            takeMoneyFrom.setInt(2, payFrom.getDatabaseId());
             
             int takeFromRows = takeMoneyFrom.executeUpdate();
             
             if(takeFromRows > 0){
-                try(PreparedStatement giveMoneyTo = this.con.prepareStatement("UPDATE "+this.TBL_ACCOUNTS+" SET balance = balance + ? WHERE uuid = ? LIMIT 1")){
+                try(PreparedStatement giveMoneyTo = this.con.prepareStatement("UPDATE "+this.TBL_ACCOUNTS+" SET balance = balance + ? WHERE id = ? LIMIT 1")){
                     giveMoneyTo.setBigDecimal(1, amountToPay);
-                    giveMoneyTo.setString(2, payTo.getUUID().toString());
+                    giveMoneyTo.setInt(2, payTo.getDatabaseId());
 
                     int giveMoneyRows = giveMoneyTo.executeUpdate();
                     
@@ -449,7 +449,7 @@ public class LonelyEconomy {
     }
 
     public LinkedHashMap<String, BigDecimal> getTopPlayers(int iTopAmount) {
-        try(PreparedStatement statement = this.con.prepareStatement("SELECT username,balance FROM "+this.TBL_ACCOUNTS+" ORDER BY sorting_balance DESC,username ASC LIMIT ?"))
+        try(PreparedStatement statement = this.con.prepareStatement("SELECT username,balance FROM "+this.TBL_ACCOUNTS+" ORDER BY balance DESC LIMIT ?"))
         {
             statement.setInt(1, iTopAmount);
             

@@ -50,6 +50,15 @@ public class CommandPay extends LonelyCommand {
             return true;
         }
 
+        // 1 - first one is bigger
+        // 0 - the same
+        // -1 - the second one is bigger
+        if(amount.compareTo(BigDecimal.ZERO) != 1) {
+            this.sendError(cs,"You cannot pay someone less than "+this.economy.format(this.economy.getBigDecimal("0.01")));
+            
+            return true;
+        }
+        
         LonelyEconomyResponse ler = this.economy.payPlayer(cs.getName(), sPayTo, amount);
         
         if(!ler.wasSuccessful())

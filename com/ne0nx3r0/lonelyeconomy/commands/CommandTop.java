@@ -47,6 +47,9 @@ public class CommandTop extends LonelyCommand {
         {
             iTopAmount = 50;
         }
+        else if(iTopAmount < 1){
+            iTopAmount = 1;
+        }
 
         List<String> toSend = new ArrayList<>();
 
