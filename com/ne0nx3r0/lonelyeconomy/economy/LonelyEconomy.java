@@ -24,7 +24,7 @@ public class LonelyEconomy {
     private final String TBL_ACCOUNTS;
     private final String TBL_TRANSACTIONS;
     private final String TBL_SERVER_BALANCE;
-    private boolean enabled;
+    private boolean enabled = false;
 
     public LonelyEconomy(LonelyEconomyPlugin plugin) throws SQLException {  
         this.logger = plugin.getLogger();
@@ -117,9 +117,10 @@ public class LonelyEconomy {
                 createTransactionsTable.close();
                 createServerBalanceTable.close();
                 insertServerBalance.close();
+                
+                this.con.setAutoCommit(true);
             }
 
-            this.con.setAutoCommit(true);
         }
         
         this.enabled = true;
