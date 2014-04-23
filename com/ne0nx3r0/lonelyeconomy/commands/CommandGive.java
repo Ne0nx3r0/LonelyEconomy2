@@ -53,12 +53,12 @@ public class CommandGive extends LonelyCommand {
             return true;
         }
         
-        this.send(cs,receiverName+" was paid "+this.economy.format(amount)+" from the server account!");
+        this.send(cs,receiverName+" was paid "+this.economy.format(amount)+" from the server account.");
         
         Player pReceiver = Bukkit.getServer().getPlayer(receiverName);
         
         if(pReceiver != null) {
-            this.send(cs,"you were paid "+this.economy.format(amount)+"!");
+            pReceiver.sendMessage("You were paid "+this.economy.format(amount)+" from the server.");
         }
         
         return true;

@@ -53,12 +53,12 @@ public class CommandTake extends LonelyCommand {
             return true;
         }
         
-        this.send(cs,pTakeFrom+" lost "+this.economy.format(amount)+" to the server account!");
+        this.send(cs,pTakeFrom+" lost "+this.economy.format(amount)+" to the server account");
         
         Player pReceiver = Bukkit.getServer().getPlayer(pTakeFrom);
         
         if(pReceiver != null) {
-            this.send(cs,"you lost "+this.economy.format(amount)+"!");
+            pReceiver.sendMessage("Y had "+this.economy.format(amount)+" taken away.");
         }
         
         return true;
