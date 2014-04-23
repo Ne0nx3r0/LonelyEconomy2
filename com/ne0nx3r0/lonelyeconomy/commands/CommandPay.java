@@ -64,7 +64,7 @@ public class CommandPay extends LonelyCommand {
         Player pReceiver = Bukkit.getServer().getPlayer(sPayTo);
         
         if(pReceiver != null) {
-            this.send(cs,cs.getName()+"paid you  "+this.economy.format(amount)+"!");
+            this.send(pReceiver,cs.getName()+" paid you  "+this.economy.format(amount)+"!");
         }
         
         return true;

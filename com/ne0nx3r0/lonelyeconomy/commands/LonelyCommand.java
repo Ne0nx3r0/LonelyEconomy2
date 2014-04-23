@@ -33,7 +33,7 @@ public class LonelyCommand {
     }
 
     void send(CommandSender cs, String...lines) {
-        cs.sendMessage(ChatColor.GRAY+"--- "+ChatColor.GOLD+this.action+ChatColor.GRAY+" ---");
+        cs.sendMessage(ChatColor.GRAY+"--- LonelyEconomy "+ChatColor.GOLD+this.name+ChatColor.GRAY+" ---");
         
         for(String line : lines) {
             cs.sendMessage(line);

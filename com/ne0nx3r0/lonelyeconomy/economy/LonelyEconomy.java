@@ -145,7 +145,7 @@ public class LonelyEconomy {
                     
                     Player player = Bukkit.getPlayer(playerName);
                     
-                    if(player != null && !playerUsername.equals(player.getName())){
+                    if(player != null && !playerUsername.equals(player.getName().toLowerCase())){
                         if(!this.updatePlayerAccountUsername(playerDBID,player.getName())){
                             player.sendMessage("Warning: was unable to update your username in the database. This may cause issues in delivering your funds.");
                         }
@@ -181,6 +181,8 @@ public class LonelyEconomy {
     }
     
     private synchronized boolean updatePlayerAccountUsername(int dbID, String username) {
+        username = username.toLowerCase();
+        
         try {
             PreparedStatement updateUsername = this.con.prepareStatement("UPDATE "+this.TBL_ACCOUNTS+" SET username=? WHERE id=? LIMIT 1;");
             updateUsername.setString(1, username);
@@ -211,7 +213,7 @@ public class LonelyEconomy {
                     
                     Player player = Bukkit.getPlayer(playerUsername);
                     
-                    if(player != null && !playerUsername.equals(player.getName())){
+                    if(player != null && !playerUsername.equals(player.getName().toLowerCase())){
                         if(!this.updatePlayerAccountUsername(playerDBID,player.getName())){
                             player.sendMessage("Warning: was unable to update your username in the database. This may cause issues in delivering your funds.");
                         }
@@ -247,6 +249,8 @@ public class LonelyEconomy {
     }
     
     public LonelyEconomyResponse createPlayerAccount(UUID playerUUID, String playerName) {
+        playerName = playerName.toLowerCase();
+        
         try (PreparedStatement createPlayerAccount = this.con.prepareStatement("INSERT INTO "+this.TBL_ACCOUNTS+"(username,uuid,balance,last_seen) VALUES(?,?,?,?)",Statement.RETURN_GENERATED_KEYS)){
             createPlayerAccount.setString(1, playerName);
             createPlayerAccount.setString(2, playerUUID.toString());
@@ -407,7 +411,7 @@ public class LonelyEconomy {
             return new LonelyEconomyResponse(LonelyEconomyResponseType.FAILURE_INSUFFICIENT_FUNDS,payFromPlayerName+" does not have "+amountToPay+"!");
         }
                 
-        LonelyEconomyResponse payToResponse = this.getPlayerAccount(payToPlayerName, false);
+        LonelyEconomyResponse payToResponse = this.getPlayerAccount(payToPlayerName, true);
         
         if(!payToResponse.wasSuccessful()){
             return payToResponse;
