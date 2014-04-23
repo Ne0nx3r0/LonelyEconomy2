@@ -1,8 +1,9 @@
-name: LonelyEconomy2
+name: LonelyEconomy
 main: com.ne0nx3r0.lonelyeconomy.LonelyEconomyPlugin
 version: '2.0a'
 database: false
 description: Lonely Economy Manager
+softdepend: [Vault]
 commands:
     money:
       description: Lonely economy commands

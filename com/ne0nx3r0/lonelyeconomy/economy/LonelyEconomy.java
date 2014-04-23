@@ -127,6 +127,7 @@ public class LonelyEconomy {
     }
     
     public boolean isEnabled(){
+        System.out.println("############################# Enabled: "+this.enabled);
         return this.enabled;
     }
     
