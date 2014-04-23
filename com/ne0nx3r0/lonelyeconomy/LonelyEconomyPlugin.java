@@ -2,6 +2,7 @@ package com.ne0nx3r0.lonelyeconomy;
 
 import com.ne0nx3r0.lonelyeconomy.commands.LonelyCommandExecutor;
 import com.ne0nx3r0.lonelyeconomy.economy.LonelyEconomy;
+import com.ne0nx3r0.lonelyeconomy.migration.Migrator;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -48,6 +49,22 @@ public class LonelyEconomyPlugin extends JavaPlugin {
         }
         
         this.getCommand("money").setExecutor(new LonelyCommandExecutor(this));
+        
+        if(this.getConfig().getBoolean("transfer_balances")){
+            this.getLogger().log(Level.INFO,"!!!!!!!!!!!!!!!!going to transfer balances!!!!!!!!!!!!!!!");
+            
+            final LonelyEconomyPlugin plugin = this;
+            
+            this.getServer().getScheduler().runTaskLaterAsynchronously(this, new Runnable(){
+
+                @Override
+                public void run() {
+                    Migrator migrator = new Migrator(plugin);
+
+                    migrator.migrate();
+                }
+            }, 120);
+        }
     }
     
     @Override
