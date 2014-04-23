@@ -8,7 +8,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -143,14 +145,6 @@ public class LonelyEconomy {
                     String playerUsername = result.getString("username");
                     int playerDBID = result.getInt("id");
                     
-                    Player player = Bukkit.getPlayer(playerName);
-                    
-                    if(player != null && !playerUsername.equals(player.getName().toLowerCase())){
-                        if(!this.updatePlayerAccountUsername(playerDBID,player.getName())){
-                            player.sendMessage("Warning: was unable to update your username in the database. This may cause issues in delivering your funds.");
-                        }
-                    }
-                    
                     return new LonelyEconomyResponse(
                         LonelyEconomyResponseType.SUCCESS,
                         new PlayerAccount(
@@ -210,14 +204,6 @@ public class LonelyEconomy {
                 if(result.next()) {
                     String playerUsername = result.getString("username");
                     int playerDBID = result.getInt("id");
-                    
-                    Player player = Bukkit.getPlayer(playerUsername);
-                    
-                    if(player != null && !playerUsername.equals(player.getName().toLowerCase())){
-                        if(!this.updatePlayerAccountUsername(playerDBID,player.getName())){
-                            player.sendMessage("Warning: was unable to update your username in the database. This may cause issues in delivering your funds.");
-                        }
-                    }
                     
                     return new LonelyEconomyResponse(
                         LonelyEconomyResponseType.SUCCESS,
@@ -531,5 +517,54 @@ public class LonelyEconomy {
     private static java.sql.Timestamp getCurrentTimeStamp() {
         java.util.Date today = new java.util.Date();
         return new java.sql.Timestamp(today.getTime());
+    }
+
+    public void updateLastSeen(Player player) {
+        LonelyEconomyResponse response = this.getPlayerAccount(player.getUniqueId(), false);
+        
+        // else player doesn't have an account
+        if(response.wasSuccessful()){
+            PlayerAccount account = response.getAccount();
+            
+            if(!player.getName().toLowerCase().equals(account.getUsername())){
+                if(!this.updatePlayerAccountUsername(account.getDatabaseId(),player.getName())){
+                    player.sendMessage(ChatColor.RED+"LonelyEconomy was unable to update your username in the database. This may cause issues in delivering money to you.");
+                }
+            }
+
+            try(PreparedStatement updateLastSeen = this.con.prepareStatement("UPDATE "+this.TBL_ACCOUNTS+" set last_seen = ? WHERE id = ? AND last_seen < ? LIMIT 1")){
+                Timestamp currentTimeStamp = getCurrentTimeStamp();
+                
+                updateLastSeen.setTimestamp(2, currentTimeStamp);
+                updateLastSeen.setInt(2, account.getDatabaseId());
+                updateLastSeen.setTimestamp(3, currentTimeStamp);
+
+                updateLastSeen.executeUpdate();
+            } 
+            catch (SQLException ex) {
+                Logger.getLogger(LonelyEconomy.class.getName()).log(Level.SEVERE, null, ex);
+                 player.sendMessage(ChatColor.RED+"LonelyEconomy was unable to update your last seen time in the database.");
+            }
+        }
+    }
+
+    // primarily used for hourly wages
+    public void giveMoneyToPlayers(List<UUID> playersToPay, BigDecimal amount) {
+        String playersToPayCSV = "";
+        
+        for(UUID playerUUID : playersToPay){
+            playersToPayCSV += ","+playerUUID.toString();
+        }
+        
+        playersToPayCSV = playersToPayCSV.substring(1);
+        
+        try(PreparedStatement giveMoneyToPlayers = this.con.prepareStatement("UPDATE "+this.TBL_ACCOUNTS+" SET balance = balance + ? WHERE uuid IN (?) LIMIT ?")){
+            giveMoneyToPlayers.setBigDecimal(1, amount);
+            giveMoneyToPlayers.setString(2, playersToPayCSV);
+            giveMoneyToPlayers.setInt(3, playersToPay.size());
+        } 
+        catch (SQLException ex) {
+            Logger.getLogger(LonelyEconomy.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 }

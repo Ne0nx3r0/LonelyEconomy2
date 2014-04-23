@@ -3,7 +3,7 @@ main: com.ne0nx3r0.lonelyeconomy.LonelyEconomyPlugin
 version: '2.1a'
 database: false
 description: Lonely Economy Manager
-softdepend: [Vault]
+softdepend: [Vault,Essentials]
 commands:
     money:
       description: Lonely economy commands
@@ -31,4 +31,7 @@ permissions:
     default: false
   lonelyeconomy.reload:
     description: Can reload settings
+    default: false
+  lonelyeconomy.wages:
+    description: Will get paid periodic wages
     default: false
