@@ -1,6 +1,6 @@
 package com.ne0nx3r0.lonelyeconomy;
 
-import com.ne0nx3r0.lonelyeconomy.commands.LonelyCommandExecutor;
+import com.ne0nx3r0.lonelyeconomy.commands.LonelyEconomyCommandExecutor;
 import com.ne0nx3r0.lonelyeconomy.economy.LonelyEconomy;
 import com.ne0nx3r0.lonelyeconomy.migration.Migrator;
 import com.ne0nx3r0.lonelyeconomy.vault.Economy_LonelyEconomy;
@@ -50,7 +50,7 @@ public class LonelyEconomyPlugin extends JavaPlugin {
             // TODO: attempt reconnect every x seconds either here or in the economy class
         }
         
-        this.getCommand("money").setExecutor(new LonelyCommandExecutor(this));
+        this.getCommand("money").setExecutor(new LonelyEconomyCommandExecutor(this));
         
         if(this.getConfig().getBoolean("transfer_balances")){
             this.getLogger().log(Level.INFO,"!!!!!!!!!!!!!!!!going to transfer balances!!!!!!!!!!!!!!!");

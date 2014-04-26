@@ -11,11 +11,11 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-public class LonelyCommandExecutor implements CommandExecutor {
+public class LonelyEconomyCommandExecutor implements CommandExecutor {
     private final Map<String,LonelyCommand> subCommands;
     private final LonelyEconomy economy;
 
-    public LonelyCommandExecutor(LonelyEconomyPlugin plugin) {
+    public LonelyEconomyCommandExecutor(LonelyEconomyPlugin plugin) {
         this.economy = plugin.getEconomy();
         this.subCommands = new HashMap<>();
         

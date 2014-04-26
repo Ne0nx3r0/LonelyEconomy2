@@ -125,8 +125,9 @@ public class LonelyEconomy {
                 
                 this.con.setAutoCommit(true);
             }
-
         }
+        
+        tableExistsResultSet.close();
         
         this.resetTask(plugin);
         
