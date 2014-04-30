@@ -576,8 +576,7 @@ public class LonelyEconomy {
         }
         
         long handoutTicks = plugin.getConfig().getLong("handout_timer",20*60*60);// once/hour
-        BigDecimal amount = new BigDecimal(plugin.getConfig().getString("handout_amount","0"));
-        
+
         this.runTaskTimer = plugin.getServer().getScheduler().runTaskTimer(plugin, new PeriodicHandoutTask(plugin,this), handoutTicks, handoutTicks);
     }
 }
