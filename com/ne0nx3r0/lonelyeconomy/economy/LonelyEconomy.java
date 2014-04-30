@@ -294,8 +294,8 @@ public class LonelyEconomy {
     public LonelyEconomyResponse giveMoneyToPlayer(String giveToPlayerName, BigDecimal amountToGivePlayer) {
         BigDecimal serverBalance = this.getServerBalance();
         
-        // values were equal = 0
         // first value was greater = 1
+        // values were equal = 0
         // second value was greater = -1
         if(amountToGivePlayer.compareTo(serverBalance) == 1){
             return new LonelyEconomyResponse(LonelyEconomyResponseType.FAILURE_INSUFFICIENT_FUNDS,"The server does not have "+amountToGivePlayer+" to spend!");
@@ -351,8 +351,8 @@ public class LonelyEconomy {
         
         PlayerAccount playerAccount = takeFromResponse.getAccount();
         
-        // values were equal = 0
         // first value was greater = 1
+        // values were equal = 0
         // second value was greater = -1
         if(playerAccount.getBalance().compareTo(amountToTakeFromPlayer) == -1){
             return new LonelyEconomyResponse(LonelyEconomyResponseType.FAILURE_INSUFFICIENT_FUNDS,playerAccount.getUsername()+" does not have "+amountToTakeFromPlayer+"!");
