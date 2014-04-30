@@ -7,8 +7,15 @@ server_daily_inflation: 100
 # How often to reward non-afk players (in ticks)
 handout_timer: 72000
 
-# How much to give non-afk players when rewarded
-handout_amount: 1.0
+# perms as: lonelyeconomy.wages.<wageGroupName>
+wages:
+    citizen: 1
+    regular: 1.5
+    veteran: 2
+    flower: 2
+    whovian: 2
+    vip: 3
+    platinum: 5    
 
 database: 
     prefix: le2_
