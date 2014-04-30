@@ -209,12 +209,11 @@ public class LonelyEconomy {
                 
                 if(result.next()) {
                     String playerUsername = result.getString("username");
-                    int playerDBID = result.getInt("id");
                     
                     return new LonelyEconomyResponse(
                         LonelyEconomyResponseType.SUCCESS,
                         new PlayerAccount(
-                            playerDBID,
+                            result.getInt("id"),
                             playerUsername,
                             UUID.fromString(result.getString("uuid")),
                             result.getBigDecimal("balance")
@@ -538,12 +537,8 @@ public class LonelyEconomy {
                 }
             }
 
-            try(PreparedStatement updateLastSeen = this.con.prepareStatement("UPDATE "+this.TBL_ACCOUNTS+" set last_seen = ? WHERE id = ? AND last_seen < ? LIMIT 1")){
-                Timestamp currentTimeStamp = getCurrentTimeStamp();
-                
-                updateLastSeen.setTimestamp(2, currentTimeStamp);
-                updateLastSeen.setInt(2, account.getDatabaseId());
-                updateLastSeen.setTimestamp(3, currentTimeStamp);
+            try(PreparedStatement updateLastSeen = this.con.prepareStatement("UPDATE "+this.TBL_ACCOUNTS+" SET last_seen = now() WHERE id = ? AND last_seen < now() LIMIT 1")){
+                updateLastSeen.setInt(1, account.getDatabaseId());
 
                 updateLastSeen.executeUpdate();
             } 

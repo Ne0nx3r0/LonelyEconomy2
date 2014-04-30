@@ -14,7 +14,7 @@ public class LonelyEconomyPlayerListener implements Listener {
     }
 
     @EventHandler
-    public void onPlayerInteract(PlayerJoinEvent e) {
+    public void onPlayerJoin(PlayerJoinEvent e) {
         this.economy.updateLastSeen(e.getPlayer());
     }
 }
