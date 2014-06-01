@@ -5,6 +5,7 @@ import com.ne0nx3r0.lonelyeconomy.economy.LonelyEconomy;
 import com.ne0nx3r0.lonelyeconomy.economy.LonelyEconomyResponse;
 import java.util.HashMap;
 import java.util.Map;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -37,8 +38,13 @@ public class LonelyEconomyCommandExecutor implements CommandExecutor {
 
         LonelyCommand lonelyCommand = this.subCommands.get(args[0]);
         
+        if(lonelyCommand == null){
+            lonelyCommand = this.subCommands.get("balance");
+            args = new String[]{"",args[0]};
+        }
+        
         if(lonelyCommand != null) {
-            if(cs.hasPermission(lonelyCommand.getPermissionNode())) {
+            if(cs.hasPermission(lonelyCommand.getPermissionNode()) || !(cs instanceof Player)) {
                 return lonelyCommand.execute(cs,args);
             }
             else {

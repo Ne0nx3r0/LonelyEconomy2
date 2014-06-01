@@ -65,6 +65,9 @@ public class PeriodicHandoutTask implements Runnable {
                 LonelyEconomyResponse response = economy.giveMoneyToPlayer(player.getName(), amountToPayPlayer);
 
                 if(response.wasSuccessful()){
+                    plugin.getLogger().log(Level.WARNING, "Paying {0} {1}",
+                            new Object[]{player.getName(), amountToPayPlayer});
+                    
                     player.sendMessage("You earned "+economy.format(amountToPayPlayer)+" in hourly wages!");
                 }
                 else {

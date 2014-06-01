@@ -1,6 +1,6 @@
 name: LonelyEconomy
 main: com.ne0nx3r0.lonelyeconomy.LonelyEconomyPlugin
-version: '2.3b'
+version: '2.3.3b'
 database: false
 description: Lonely Economy Manager
 softdepend: [Vault,Essentials]
