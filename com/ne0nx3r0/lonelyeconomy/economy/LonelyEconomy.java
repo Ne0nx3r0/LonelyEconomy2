@@ -134,51 +134,9 @@ public class LonelyEconomy {
     }
     
     public boolean isEnabled(){
-        System.out.println("############################# Enabled: "+this.enabled);
         return this.enabled;
     }
-    
-    public LonelyEconomyResponse getPlayerAccount(String playerName,boolean createIfNotExists) {
-        playerName = playerName.toLowerCase();
-        
-        try(PreparedStatement getPlayerAccount = this.con.prepareStatement("SELECT id,username,uuid,balance,last_seen FROM "+this.TBL_ACCOUNTS+" WHERE username=?")){
-            
-            getPlayerAccount.setString(1, playerName);
-            
-            try(ResultSet result = getPlayerAccount.executeQuery()){
-                if(result.next()) {
-                    String playerUsername = result.getString("username");
-                    int playerDBID = result.getInt("id");
-                    
-                    return new LonelyEconomyResponse(
-                        LonelyEconomyResponseType.SUCCESS,
-                        new PlayerAccount(
-                            playerDBID,
-                            playerUsername,
-                            UUID.fromString(result.getString("uuid")),
-                            result.getBigDecimal("balance")
-                        )
-                    );
-                }
-                else if(createIfNotExists){
-                    // if the player is online create an account for them
-                    Player player = Bukkit.getPlayer(playerName);
 
-                    if(player != null){
-                        return this.createPlayerAccount(player.getUniqueId(),player.getName().toLowerCase());
-                    }
-                }
-            }
-        } 
-        catch (SQLException ex) {
-            Logger.getLogger(LonelyEconomy.class.getName()).log(Level.SEVERE, null, ex);
-            
-            return new LonelyEconomyResponse(LonelyEconomyResponseType.FAILURE,"A database error occured while finding an account for "+playerName);
-        }  
-            
-        return new LonelyEconomyResponse(LonelyEconomyResponseType.FAILURE,"No account exists for "+playerName);
-    }
-    
     private synchronized boolean updatePlayerAccountUsername(int dbID, String username) {
         username = username.toLowerCase();
         
@@ -291,7 +249,7 @@ public class LonelyEconomy {
         return this.getBigDecimal(0);
     }
     
-    public LonelyEconomyResponse giveMoneyToPlayer(String giveToPlayerName, BigDecimal amountToGivePlayer) {
+    public LonelyEconomyResponse giveMoneyToPlayer(UUID uuidGiveMoneyTo, BigDecimal amountToGivePlayer) {
         BigDecimal serverBalance = this.getServerBalance();
         
         // first value was greater = 1
@@ -301,7 +259,7 @@ public class LonelyEconomy {
             return new LonelyEconomyResponse(LonelyEconomyResponseType.FAILURE_INSUFFICIENT_FUNDS,"The server does not have "+amountToGivePlayer+" to spend!");
         }
         
-        LonelyEconomyResponse playerAccountResponse = this.getPlayerAccount(giveToPlayerName, true);
+        LonelyEconomyResponse playerAccountResponse = this.getPlayerAccount(uuidGiveMoneyTo, true);
         
         // verifies the player has a valid account to give the money to
         // before taking it from the server
@@ -339,11 +297,11 @@ public class LonelyEconomy {
             return new LonelyEconomyResponse(LonelyEconomyResponseType.FAILURE_DATABASE,"A database error occurred!");
         }
         
-        return new LonelyEconomyResponse(LonelyEconomyResponseType.FAILURE,"Unable to give "+amountToGivePlayer+" to "+giveToPlayerName);
+        return new LonelyEconomyResponse(LonelyEconomyResponseType.FAILURE,"Unable to give "+amountToGivePlayer+" to "+uuidGiveMoneyTo.toString());
     }
 
-    public LonelyEconomyResponse takeMoneyFromPlayer(String takeFromPlayerName, BigDecimal amountToTakeFromPlayer) {
-        LonelyEconomyResponse takeFromResponse = this.getPlayerAccount(takeFromPlayerName, false);
+    public LonelyEconomyResponse takeMoneyFromPlayer(UUID uuidTakeFrom, BigDecimal amountToTakeFromPlayer) {
+        LonelyEconomyResponse takeFromResponse = this.getPlayerAccount(uuidTakeFrom, false);
         
         if(!takeFromResponse.wasSuccessful()) {
             return takeFromResponse;
@@ -385,11 +343,11 @@ public class LonelyEconomy {
         }
     }
     
-    public LonelyEconomyResponse payPlayer(String payFromPlayerName, String payToPlayerName, BigDecimal amountToPay) {
-        LonelyEconomyResponse payFromResponse = this.getPlayerAccount(payFromPlayerName, false);
+    public LonelyEconomyResponse payPlayer(UUID payFromUUID, UUID payToUUID, BigDecimal amountToPay) {
+        LonelyEconomyResponse payFromResponse = this.getPlayerAccount(payFromUUID, false);
                 
         if(!payFromResponse.wasSuccessful()) {
-            return new LonelyEconomyResponse(LonelyEconomyResponseType.FAILURE_NO_ACCOUNT_EXISTS,"No account exists for "+payFromPlayerName);
+            return new LonelyEconomyResponse(LonelyEconomyResponseType.FAILURE_NO_ACCOUNT_EXISTS,"No account exists for that user");
         }
         
         PlayerAccount payFrom = payFromResponse.getAccount();
@@ -398,10 +356,10 @@ public class LonelyEconomy {
         // values were equal = 0
         // second value was greater = -1
         if(payFrom.getBalance().compareTo(amountToPay) == -1){
-            return new LonelyEconomyResponse(LonelyEconomyResponseType.FAILURE_INSUFFICIENT_FUNDS,payFromPlayerName+" does not have "+amountToPay+"!");
+            return new LonelyEconomyResponse(LonelyEconomyResponseType.FAILURE_INSUFFICIENT_FUNDS,payFrom.getUsername()+" does not have "+amountToPay+"!");
         }
                 
-        LonelyEconomyResponse payToResponse = this.getPlayerAccount(payToPlayerName, true);
+        LonelyEconomyResponse payToResponse = this.getPlayerAccount(payToUUID, true);
         
         if(!payToResponse.wasSuccessful()){
             return payToResponse;
@@ -463,8 +421,8 @@ public class LonelyEconomy {
     }
 
     // returns the player's rank or -1 for no account or error
-    public int getRank(String playerName) {
-        LonelyEconomyResponse response = this.getPlayerAccount(playerName, false);
+    public int getRank(UUID playerUUID) {
+        LonelyEconomyResponse response = this.getPlayerAccount(playerUUID, false);
         
         if(!response.wasSuccessful()) {
             return -1;

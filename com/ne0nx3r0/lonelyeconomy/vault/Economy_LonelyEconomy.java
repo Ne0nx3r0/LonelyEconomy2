@@ -8,6 +8,7 @@ import java.util.logging.Logger;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -65,36 +66,72 @@ public class Economy_LonelyEconomy implements Economy {
                 }
             }
         }
-    }  
-    
-    @Override
-    public double getBalance(String playerName) {
-        LonelyEconomyResponse response = this.economy.getPlayerAccount(playerName, false);
-        
-        if(!response.wasSuccessful()){
-            return 0;
-        }
-        
-        return response.getAccount().getBalance().doubleValue();
     }
-    
+
     // Wrapper
     @Override
-    public double getBalance(String playerName, String world) {
-        return this.getBalance(playerName);
+    public double getBalance(String playerName) {
+        OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(playerName);
+
+        if(offlinePlayer == null){
+            return 0;
+        }
+
+        return this.getBalance(offlinePlayer);
     }
 
     @Override
+    public double getBalance(OfflinePlayer offlinePlayer) {
+        LonelyEconomyResponse response = this.economy.getPlayerAccount(offlinePlayer.getUniqueId(), false);
+
+        if(!response.wasSuccessful()){
+            return 0;
+        }
+
+        return response.getAccount().getBalance().doubleValue();
+    }
+
+    // Wrapper
+    @Override
+    public double getBalance(String playerName, String world) {
+        OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(playerName);
+
+        if(offlinePlayer == null){
+            return 0;
+        }
+
+        return this.getBalance(offlinePlayer);
+    }
+
+    // Wrapper
+    @Override
+    public double getBalance(OfflinePlayer offlinePlayer, String world) {
+        return this.getBalance(offlinePlayer);
+    }
+
+    // Wrapper
+    @Override
     public boolean has(String playerName, double amount) {
-        LonelyEconomyResponse response = this.economy.getPlayerAccount(playerName, false);
-        
+        OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(playerName);
+
+        if(offlinePlayer == null){
+            return false;
+        }
+
+        return has(offlinePlayer, amount);
+    }
+
+    @Override
+    public boolean has(OfflinePlayer offlinePlayer, double amount) {
+        LonelyEconomyResponse response = this.economy.getPlayerAccount(offlinePlayer.getUniqueId(), false);
+
         if(!response.wasSuccessful()){
             return false;
         }
-        
+
         return response.getAccount().getBalance().compareTo(this.economy.getBigDecimal(amount)) != -1;
     }
-    
+
     // Wrapper
     @Override
     public boolean has(String playerName, String worldName, double amount) {
@@ -102,33 +139,71 @@ public class Economy_LonelyEconomy implements Economy {
     }
 
     @Override
+    public boolean has(OfflinePlayer offlinePlayer, String worldName, double amount) {
+        return this.has(offlinePlayer,amount);
+    }
+
+    @Override
     public EconomyResponse withdrawPlayer(String playerName, double amount) {
+        OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(playerName);
+
+        if(offlinePlayer == null){
+            return new EconomyResponse(0, 0, EconomyResponse.ResponseType.FAILURE, "User account not found!");
+        }
+
+        return this.withdrawPlayer(offlinePlayer,amount);
+    }
+
+    @Override
+    public EconomyResponse withdrawPlayer(OfflinePlayer offlinePlayer, double amount) {
         if (amount < 0) {
             return new EconomyResponse(0, 0, EconomyResponse.ResponseType.FAILURE, "Cannot withdraw negative funds");
         }
-        
-        LonelyEconomyResponse ler = this.economy.takeMoneyFromPlayer(playerName, this.economy.getBigDecimal(amount));
-        
+
+        LonelyEconomyResponse ler = this.economy.takeMoneyFromPlayer(offlinePlayer.getUniqueId(), this.economy.getBigDecimal(amount));
+
         if(ler.wasSuccessful()) {
             return new EconomyResponse(amount, this.economy.getDouble(ler.getAccount().getBalance()), EconomyResponse.ResponseType.SUCCESS, null);
         }
 
         return new EconomyResponse(0, this.economy.getDouble(ler.getAccount().getBalance()), EconomyResponse.ResponseType.FAILURE, ler.getMessage());
     }
-    
+
     // Wrapper
     @Override
     public EconomyResponse withdrawPlayer(String playerName, String worldName, double amount) {
-        return this.withdrawPlayer(playerName, amount);
+        OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(playerName);
+
+        if(offlinePlayer == null){
+            return new EconomyResponse(0, 0, EconomyResponse.ResponseType.FAILURE, "User account not found!");
+        }
+
+        return this.withdrawPlayer(offlinePlayer,amount);
+    }
+
+    @Override
+    public EconomyResponse withdrawPlayer(OfflinePlayer offlinePlayer, String worldName, double amount) {
+        return this.withdrawPlayer(offlinePlayer,amount);
     }
 
     @Override
     public EconomyResponse depositPlayer(String playerName, double amount) {
+        OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(playerName);
+
+        if(offlinePlayer == null){
+            return new EconomyResponse(0, 0, EconomyResponse.ResponseType.FAILURE, "User account not found!");
+        }
+
+        return this.depositPlayer(offlinePlayer, amount);
+    }
+
+    @Override
+    public EconomyResponse depositPlayer(OfflinePlayer offlinePlayer, double amount) {
         if (amount < 0) {
             return new EconomyResponse(0, 0, EconomyResponse.ResponseType.FAILURE, "Cannot withdraw negative funds");
         }
         
-        LonelyEconomyResponse ler = this.economy.giveMoneyToPlayer(playerName, this.economy.getBigDecimal(amount));
+        LonelyEconomyResponse ler = this.economy.giveMoneyToPlayer(offlinePlayer.getUniqueId(), this.economy.getBigDecimal(amount));
         
         if(ler.wasSuccessful()) {
             return new EconomyResponse(amount, this.economy.getDouble(ler.getAccount().getBalance()), EconomyResponse.ResponseType.SUCCESS, null);
@@ -136,23 +211,48 @@ public class Economy_LonelyEconomy implements Economy {
 
         return new EconomyResponse(0, this.economy.getDouble(ler.getAccount().getBalance()), EconomyResponse.ResponseType.FAILURE, ler.getMessage());
     }
-    
+
     @Override
     public EconomyResponse depositPlayer(String playerName, String worldName, double amount) {
         return this.depositPlayer(playerName, amount);
     }
 
     @Override
-    public boolean createPlayerAccount(String playerName) {
-        LonelyEconomyResponse ler = this.economy.getPlayerAccount(playerName, true);
-        
-        return ler.wasSuccessful();
+    public EconomyResponse depositPlayer(OfflinePlayer offlinePlayer, String s, double amount) {
+        return this.depositPlayer(offlinePlayer, amount);
     }
-    
+
+    @Override
+    public boolean createPlayerAccount(String playerName) {
+        OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(playerName);
+
+        if(offlinePlayer != null){
+            return this.economy.getPlayerAccount(offlinePlayer.getUniqueId(), true).wasSuccessful();
+        }
+        
+        return false;
+    }
+
+    @Override
+    public boolean createPlayerAccount(OfflinePlayer offlinePlayer) {
+        return this.economy.getPlayerAccount(offlinePlayer.getUniqueId(), true).wasSuccessful();
+    }
+
     // Wrapper
     @Override
     public boolean createPlayerAccount(String playerName, String worldName) {
-        return this.createPlayerAccount(playerName);
+        OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(playerName);
+
+        if(offlinePlayer == null){
+            return false;
+        }
+
+        return this.createPlayerAccount(offlinePlayer);
+    }
+
+    @Override
+    public boolean createPlayerAccount(OfflinePlayer offlinePlayer, String worldName) {
+        return this.createPlayerAccount(offlinePlayer);
     }
 
     @Override
@@ -196,7 +296,18 @@ public class Economy_LonelyEconomy implements Economy {
 
     @Override
     public boolean hasAccount(String playerName) {
-        return this.economy.getPlayerAccount(playerName, true).wasSuccessful();
+        OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(playerName);
+
+        if(offlinePlayer == null) {
+            return false;
+        }
+
+        return this.economy.getPlayerAccount(offlinePlayer.getUniqueId(), true).wasSuccessful();
+    }
+
+    @Override
+    public boolean hasAccount(OfflinePlayer offlinePlayer) {
+        return this.economy.getPlayerAccount(offlinePlayer.getUniqueId(), true).wasSuccessful();
     }
 
     @Override
@@ -204,9 +315,19 @@ public class Economy_LonelyEconomy implements Economy {
         return this.hasAccount(playerName);
     }
 
+    @Override
+    public boolean hasAccount(OfflinePlayer offlinePlayer, String worldName) {
+        return this.hasAccount(offlinePlayer);
+    }
+
     // Unsupported methods
     @Override
     public EconomyResponse createBank(String name, String player) {
+        throw new UnsupportedOperationException("Not supported.");
+    }
+
+    @Override
+    public EconomyResponse createBank(String s, OfflinePlayer offlinePlayer) {
         throw new UnsupportedOperationException("Not supported.");
     }
 
@@ -241,12 +362,24 @@ public class Economy_LonelyEconomy implements Economy {
     }
 
     @Override
+    public EconomyResponse isBankOwner(String s, OfflinePlayer offlinePlayer) {
+        return null;
+    }
+
+    @Override
     public EconomyResponse isBankMember(String name, String playerName) {
         throw new UnsupportedOperationException("Not supported."); 
+    }
+
+    @Override
+    public EconomyResponse isBankMember(String s, OfflinePlayer offlinePlayer) {
+        throw new UnsupportedOperationException("Not supported.");
     }
 
     @Override
     public List<String> getBanks() {
         throw new UnsupportedOperationException("Not supported."); 
     }
+
+    // new methods
 }

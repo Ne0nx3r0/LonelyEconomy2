@@ -5,6 +5,7 @@ import com.ne0nx3r0.lonelyeconomy.economy.LonelyEconomy;
 import com.ne0nx3r0.lonelyeconomy.economy.LonelyEconomyResponse;
 import java.math.BigDecimal;
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -43,8 +44,16 @@ public class CommandGive extends LonelyCommand {
             
             return true;
         }
-  
-        LonelyEconomyResponse ler = this.economy.giveMoneyToPlayer(receiverName, amount);
+
+        OfflinePlayer receiverPlayer = Bukkit.getOfflinePlayer(receiverName);
+
+        if(receiverPlayer == null){
+            this.sendError(cs,"Unable to find player "+receiverName);
+
+            return true;
+        }
+
+        LonelyEconomyResponse ler = this.economy.giveMoneyToPlayer(receiverPlayer.getUniqueId(), amount);
         
         if(!ler.wasSuccessful())
         {

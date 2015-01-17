@@ -2,7 +2,6 @@ package com.ne0nx3r0.lonelyeconomy;
 
 import com.ne0nx3r0.lonelyeconomy.commands.LonelyEconomyCommandExecutor;
 import com.ne0nx3r0.lonelyeconomy.economy.LonelyEconomy;
-import com.ne0nx3r0.lonelyeconomy.migration.Migrator;
 import com.ne0nx3r0.lonelyeconomy.vault.Economy_LonelyEconomy;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -51,22 +50,6 @@ public class LonelyEconomyPlugin extends JavaPlugin {
         }
         
         this.getCommand("money").setExecutor(new LonelyEconomyCommandExecutor(this));
-        
-        if(this.getConfig().getBoolean("transfer_balances")){
-            this.getLogger().log(Level.INFO,"!!!!!!!!!!!!!!!!going to transfer balances!!!!!!!!!!!!!!!");
-            
-            final LonelyEconomyPlugin plugin = this;
-            
-            this.getServer().getScheduler().runTaskLaterAsynchronously(this, new Runnable(){
-
-                @Override
-                public void run() {
-                    Migrator migrator = new Migrator(plugin);
-
-                    migrator.migrate();
-                }
-            }, 120);
-        }
         
         // Hook into vault
         getServer().getServicesManager().register(net.milkbowl.vault.economy.Economy.class, new Economy_LonelyEconomy(this), this, ServicePriority.Highest);

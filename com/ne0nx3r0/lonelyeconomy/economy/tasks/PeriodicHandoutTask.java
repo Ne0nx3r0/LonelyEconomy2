@@ -62,7 +62,7 @@ public class PeriodicHandoutTask implements Runnable {
             
             // amountToPayPlayer > 0
             if(amountToPayPlayer.compareTo(BigDecimal.ZERO) == 1){
-                LonelyEconomyResponse response = economy.giveMoneyToPlayer(player.getName(), amountToPayPlayer);
+                LonelyEconomyResponse response = economy.giveMoneyToPlayer(player.getUniqueId(), amountToPayPlayer);
 
                 if(response.wasSuccessful()){
                     plugin.getLogger().log(Level.WARNING, "Paying {0} {1}",
