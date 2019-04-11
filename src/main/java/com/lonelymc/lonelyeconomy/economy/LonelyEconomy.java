@@ -58,7 +58,7 @@ public class LonelyEconomy {
 	}
         
 	try {
-            this.con = DriverManager.getConnection("jdbc:mysql://"+hostname+":"+port+"/"+database,username,password);
+            this.con = DriverManager.getConnection("jdbc:mysql://"+hostname+":"+port+"/"+database+"?autoReconnect=true&failOverReadOnly=false",username,password);
 	} 
         catch (SQLException ex) {
             this.logger.log(Level.SEVERE, null, ex);
