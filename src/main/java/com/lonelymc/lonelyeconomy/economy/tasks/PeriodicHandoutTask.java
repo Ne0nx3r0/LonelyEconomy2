@@ -1,7 +1,5 @@
 package com.lonelymc.lonelyeconomy.economy.tasks;
 
-import com.earth2me.essentials.Essentials;
-import com.earth2me.essentials.User;
 import com.lonelymc.lonelyeconomy.LonelyEconomyPlugin;
 import com.lonelymc.lonelyeconomy.economy.LonelyEconomy;
 import com.lonelymc.lonelyeconomy.economy.LonelyEconomyResponse;
@@ -35,19 +33,9 @@ public class PeriodicHandoutTask implements Runnable {
 
     @Override
     public void run() {
-        Essentials essentials = (Essentials) plugin.getServer().getPluginManager().getPlugin("Essentials");
-        
         Bukkit.getServer().broadcastMessage(ChatColor.GOLD+"[LonelyEconomy] "+ChatColor.WHITE+"Paying player wages");
             
-        for(Player player : Bukkit.getServer().getOnlinePlayers()) {
-            if(essentials != null){
-                User user = essentials.getUser(player);
-
-                if(user.isAfk()){
-                    continue;
-                }
-            }
-            
+        for(Player player : Bukkit.getServer().getOnlinePlayers()) {            
             BigDecimal amountToPayPlayer = BigDecimal.ZERO;
             
             // find the largest wage group they have the perm to
