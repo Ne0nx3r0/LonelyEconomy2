@@ -1,0 +1,37 @@
+name: LonelyEconomy
+main: com.lonelymc.lonelyeconomy.LonelyEconomyPlugin
+version: '2.3.3b'
+database: false
+description: Lonely Economy Manager
+softdepend: [Vault,Essentials]
+commands:
+    money:
+      description: Lonely economy commands
+permissions:
+  lonelyeconomy.balance:
+    description: Can see own balance
+    default: false
+  lonelyeconomy.balance.others:
+    description: Can see balance of others
+    default: false
+  lonelyeconomy.pay:
+    description: Can pay others
+    default: false
+  lonelyeconomy.give:
+    description: Can give money from the server account to a player
+    default: false
+  lonelyeconomy.take:
+    description: Can take money from a player to the server
+    default: false
+  lonelyeconomy.top:
+    description: Can see top players
+    default: false
+  lonelyeconomy.rank:
+    description: Can see rank of players
+    default: false
+  lonelyeconomy.reload:
+    description: Can reload settings
+    default: false
+  lonelyeconomy.wages:
+    description: Will get paid periodic wages
+    default: false

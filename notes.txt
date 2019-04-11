@@ -1,0 +1,76 @@
+Manzano, Robert A CIV STRATCOM J62 (USA)
+	
+Thu, Mar 21, 2:28 PM (8 days ago)
+	
+to me
+
+---------
+
+ 
+
+LonelyBoxes
+
+ 
+/lb rarity new <name> <color>
+/lb rarity new <name> <color>
+/lb rarity new <name> <color>
+/lb rarity new <name> <color>
+/lb rarity delete <name> <color>
+/lb rarity rename <name> <color>
+
+/lb new <name!>
+
+/lb edit <name!>
+/lb edit <name!>
+
+/lb delete <name!>
+
+/lb view <name!>
+
+/lb give <name!> [player!]
+
+/lb token <money|xp|consoleCommand!> <amount|command>
+
+/lb setdaily <groupname!> <name!>
+
+/lb daily
+
+ 
+
+---------
+
+ 
+
+nodes:
+
+ 
+
+lonelyboxes.view
+
+lonelyboxes.daily.<name>
+
+ 
+
+lonelyboxes.admin.*
+
+ 
+
+lonelyboxes.admin.give
+
+lonelyboxes.admin.new
+
+lonelyboxes.admin.edit
+
+lonelyboxes.admin.delete
+
+ 
+
+lonelyboxes.admin.token.*
+
+ 
+
+lonelyboxes.admin.token.xp
+
+lonelyboxes.admin.token.money
+
+lonelyboxes.admin.token.consoleCommand
