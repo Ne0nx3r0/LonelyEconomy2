@@ -8,6 +8,8 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
@@ -58,12 +60,12 @@ public class CommandTop extends LonelyCommand {
         int iRank = 0;
         
         LinkedHashMap<String, BigDecimal> topPlayers = this.economy.getTopPlayers(iTopAmount);
-        Iterator it = topPlayers.entrySet().iterator();
+        Iterator<Entry<String, BigDecimal>> it = topPlayers.entrySet().iterator();
         
         while (it.hasNext()) {
             iRank++;
             
-            Map.Entry pairs = (Map.Entry) it.next();
+            Map.Entry<String, BigDecimal> pairs = (Map.Entry<String, BigDecimal>) it.next();
 
             toSend.add(ChatColor.GOLD+"#"+iRank+" "+ChatColor.WHITE+pairs.getKey()+ChatColor.GRAY+" ("+this.economy.format((BigDecimal) pairs.getValue())+ChatColor.GRAY+")");
         }

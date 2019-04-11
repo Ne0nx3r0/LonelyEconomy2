@@ -16,6 +16,7 @@ import org.bukkit.event.server.PluginDisableEvent;
 import org.bukkit.event.server.PluginEnableEvent;
 import org.bukkit.plugin.Plugin;
 
+@SuppressWarnings("deprecation")
 public class Economy_LonelyEconomy implements Economy {
     private static final Logger log = Logger.getLogger("Minecraft");
     private final Plugin plugin;

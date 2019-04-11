@@ -24,6 +24,7 @@ public class CommandPay extends LonelyCommand {
     }
     
     @Override
+    @SuppressWarnings("deprecation")
     public boolean execute(CommandSender cs,String[] args) {        
         if(args.length < 3)
         {

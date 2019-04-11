@@ -5,7 +5,6 @@ import com.lonelymc.lonelyeconomy.economy.LonelyEconomy;
 import com.lonelymc.lonelyeconomy.economy.LonelyEconomyResponse;
 import java.util.HashMap;
 import java.util.Map;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;

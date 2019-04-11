@@ -4,7 +4,6 @@ import com.lonelymc.lonelyeconomy.LonelyEconomyPlugin;
 import com.lonelymc.lonelyeconomy.economy.LonelyEconomy;
 import com.lonelymc.lonelyeconomy.economy.LonelyEconomyResponse;
 import com.lonelymc.lonelyeconomy.economy.PlayerAccount;
-import java.math.BigDecimal;
 
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -25,6 +24,7 @@ public class CommandBalance extends LonelyCommand {
     }
     
     @Override
+    @SuppressWarnings("deprecation")
     public boolean execute(CommandSender cs,String[] args) {        
         if(args.length < 2)
         {

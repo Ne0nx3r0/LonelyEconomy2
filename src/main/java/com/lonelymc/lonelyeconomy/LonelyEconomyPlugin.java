@@ -46,7 +46,7 @@ public class LonelyEconomyPlugin extends JavaPlugin {
             
             return;
             
-            // TODO: attempt reconnect every x seconds either here or in the economy class
+            // Consider attempting reconnect every x seconds either here or in the economy class
         }
         
         this.getCommand("money").setExecutor(new LonelyEconomyCommandExecutor(this));
